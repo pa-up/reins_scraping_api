@@ -27,7 +27,6 @@ from email.mime.application import MIMEApplication
 static_path = "static"
 mail_excel_path = static_path + "/input_excel/email_pw.xlsx"
 search_method_csv_path = static_path + "/csv/search_method.csv"
-output_reins_csv_path = static_path + "/csv/output_reins.csv"
 output_reins_excel_path = static_path + "/output_excel/output_reins.xlsx"
 log_txt_path = static_path + "/log/log.txt"
 
@@ -305,6 +304,31 @@ def csv_to_list(csv_path: str = "output.csv"):
     return data_list
 
 
+def excel_to_list(input_excel_path: str = "input.xlsx"):
+    workbook = openpyxl.load_workbook(input_excel_path)
+    sheet = workbook.active
+    row_num = sheet.max_row
+    col_num = sheet.max_column
+    data_list = []
+    for row in range(1, row_num+1):
+        row_data = []
+        for col in range(1, col_num+1):
+            cell_value = sheet.cell(row=row, column=col).value
+            row_data.append(cell_value)
+        data_list.append(row_data)
+    return data_list
+
+def list_to_excel(to_excel_list: list , output_excel_path: str = "output.xlsx"):
+    workbook = openpyxl.Workbook()
+    sheet = workbook.active
+    row_num = len(to_excel_list)
+    col_num = len(to_excel_list[0])
+    for row in range(row_num):
+        for col in range(col_num):
+            sheet.cell(row=row+1, column=col+1).value = to_excel_list[row][col]
+    workbook.save(output_excel_path)
+    
+
 def get_search_option(input_csv_path):
     """ 定期実行ツールがcsvファイルから検索方法と条件を取得する関数 """
     search_option_list = csv_to_list(input_csv_path)
@@ -349,7 +373,6 @@ def cloud_fast_api_1(data: RequestData):
     driver.get(searched_url)
     log_txt.add_log_txt("reinsサイトにアクセス完了")
 
-    log_txt.add_log_txt(f"user_id : {user_id} , password : {password}")
     try:
         # ログイン突破
         reins_sraper.login_reins(user_id , password)
@@ -361,14 +384,12 @@ def cloud_fast_api_1(data: RequestData):
         search_method_value , index_of_search_requirement = get_search_option(search_method_csv_path)
         log_txt.add_log_txt(f"(search_method_value , index_of_search_requirement) : \n{search_method_value} \n{index_of_search_requirement}")
         # スクレイピング結果のリストを取得
-        to_csv_list = reins_sraper.scraping_solding_list(search_method_value , index_of_search_requirement)
+        to_excel_list = reins_sraper.scraping_solding_list(search_method_value , index_of_search_requirement)
         log_txt.add_log_txt("スクレイピング結果のリストを取得 : 完了")
-        # スクレイピング結果のリストをCSVファイルに保存
-        list_to_csv(to_csv_list = to_csv_list , csv_path = output_reins_csv_path ,)
-        log_txt.add_log_txt("スクレイピング結果のリストをCSVファイルに保存 : 完了")
-        # スクレイピング結果のcsvファイルをExcelファイルに変更
-        csv_to_excel(output_reins_csv_path , output_reins_excel_path)
-        log_txt.add_log_txt("スクレイピング結果のcsvファイルをExcelファイルに変更 : 完了")
+        # スクレイピング結果のリストをExcelファイルに保存
+        list_to_excel(to_excel_list , output_reins_excel_path)
+        ##### 最終的にはExcelの定型フォームに貼り付け
+        log_txt.add_log_txt("スクレイピング結果をExcelファイルに変更 : 完了")
 
         # 検索方法と検索条件を文字列で取得
         if search_method_value == "search_solding":
