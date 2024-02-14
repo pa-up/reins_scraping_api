@@ -353,16 +353,22 @@ def cloud_fast_api_1(data: RequestData):
     try:
         # ログイン突破
         reins_sraper.login_reins(user_id , password)
+        log_txt.add_log_txt("ログイン成功")
         # REINS上で存在する検索方法と検索条件を全て取得（01〜50番号まであることを前提）
         solding_search_method_list , rental_search_method_list = reins_sraper.get_solding_or_rental_option()
+        log_txt.add_log_txt(f"solding_search_method_list , rental_search_method_list : \n{solding_search_method_list} \n{rental_search_method_list}")
         # csvファイルから検索方法と検索条件を選択（将来的に別のWEBアプリでも編集可能）
         search_method_value , index_of_search_requirement = get_search_option(search_method_csv_path)
+        log_txt.add_log_txt(f"(search_method_value , index_of_search_requirement) : \n{search_method_value} \n{index_of_search_requirement}")
         # スクレイピング結果のリストを取得
         to_csv_list = reins_sraper.scraping_solding_list(search_method_value , index_of_search_requirement)
+        log_txt.add_log_txt("スクレイピング結果のリストを取得 : 完了")
         # スクレイピング結果のリストをCSVファイルに保存
         list_to_csv(to_csv_list = to_csv_list , csv_path = output_reins_csv_path ,)
+        log_txt.add_log_txt("スクレイピング結果のリストをCSVファイルに保存 : 完了")
         # スクレイピング結果のcsvファイルをExcelファイルに変更
         csv_to_excel(output_reins_csv_path , output_reins_excel_path)
+        log_txt.add_log_txt("スクレイピング結果のcsvファイルをExcelファイルに変更 : 完了")
 
         # 検索方法と検索条件を文字列で取得
         if search_method_value == "search_solding":
@@ -371,6 +377,7 @@ def cloud_fast_api_1(data: RequestData):
         else:
             search_method = "賃貸検索"
             search_requirement = rental_search_method_list[index_of_search_requirement]
+        log_txt.add_log_txt("検索方法と検索条件を文字列で取得 : 完了")
         
         # メールの送信文
         message_subject = "REINSスクレイピング定期実行"
