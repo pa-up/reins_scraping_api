@@ -349,6 +349,7 @@ def cloud_fast_api_1(data: RequestData):
     driver.get(searched_url)
     log_txt.add_log_txt("reinsサイトにアクセス完了")
 
+    log_txt.add_log_txt(f"user_id : {user_id} , password : {password}")
     try:
         # ログイン突破
         reins_sraper.login_reins(user_id , password)
