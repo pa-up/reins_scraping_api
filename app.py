@@ -159,9 +159,11 @@ class Reins_Scraper:
         # ボタン「売買 物件検索」をクリック
         sold_building_search_button = self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), '売買') and contains(text(), '物件検索')]")))
         sold_building_search_button.click()
+        time.sleep(1)
         # 検索条件を取得
         display_search_method_link = self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "(//div[@class='card p-card'])[1]"))).find_element(By.XPATH, ".//a[contains(span, '検索条件を表示')]")
         display_search_method_link.click()
+        time.sleep(1)
         # 検索条件のリストを取得
         select_element = self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "//div[@class='p-selectbox']//select")))
         search_method_element_list = select_element.find_elements(By.TAG_NAME, "option")
@@ -174,9 +176,11 @@ class Reins_Scraper:
         # ボタン「売買 物件検索」をクリック
         rental_building_search_button = self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), '賃貸') and contains(text(), '物件検索')]")))
         rental_building_search_button.click()
+        time.sleep(1)
         # 検索条件を取得
         display_search_method_link = self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "(//div[@class='card p-card'])[1]"))).find_element(By.XPATH, ".//a[contains(span, '検索条件を表示')]")
         display_search_method_link.click()
+        time.sleep(1)
         # 検索条件のリストを取得
         select_element = self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "//div[@class='p-selectbox']//select")))
         search_method_element_list = select_element.find_elements(By.TAG_NAME, "option")
@@ -185,6 +189,7 @@ class Reins_Scraper:
             rental_search_method_list.append( search_method_element.text )
         # 前のページに戻る
         self.driver.back()
+        time.sleep(2)
         return solding_search_method_list , rental_search_method_list
         
     def scraping_solding_list(self , search_method_value: str , index_of_search_requirement: int):
@@ -192,17 +197,21 @@ class Reins_Scraper:
         if search_method_value == "search_solding":
             building_search_button = self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), '売買') and contains(text(), '物件検索')]")))
             building_search_button.click()
+            time.sleep(1)
         else:
             building_search_button = self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), '賃貸') and contains(text(), '物件検索')]")))
             building_search_button.click()
+            time.sleep(1)
 
         # 売買検索条件を選択
         display_search_method_link = self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "(//div[@class='card p-card'])[1]"))).find_element(By.XPATH, ".//a[contains(span, '検索条件を表示')]")
         display_search_method_link.click()
+        time.sleep(1)
         choice_search_method = Select(self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "//div[@class='p-selectbox']//select"))))
         choice_search_method.select_by_index(index_of_search_requirement)
         get_button = self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), '読込')]")))
         get_button.click()
+        time.sleep(1)
         time.sleep(0.5)
 
         # 検索条件が存在するか判定
@@ -214,14 +223,15 @@ class Reins_Scraper:
         
         ok_button = self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), 'OK')]")))
         ok_button.click()
-        time.sleep(0.5)
+        time.sleep(1)
 
         # 検索条件に基づいて検索実行
         search_button = self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "//div[@class='p-frame-bottom']//button[contains(text(), '検索')]")))
         search_button.click()
+        time.sleep(2)
 
         # 物件リストが何ページあるかを判定
-        time.sleep(1)
+        time.sleep(2)
         page_count_info = self.wait_driver.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.card-header"))).text
         match = re.search(r'(\d+)件', page_count_info)
         total_number = int( match.group(1) )
@@ -234,6 +244,7 @@ class Reins_Scraper:
             # 印刷表示ボタンをクリック
             print_button = self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), '印刷')]")))
             print_button.click()
+            time.sleep(2)
             
             # 現在のページのHTML要素を取得
             table_tag_str = self.wait_driver.until(EC.presence_of_element_located((By.TAG_NAME, "table"))).get_attribute('outerHTML')
@@ -254,22 +265,24 @@ class Reins_Scraper:
                 # リストの表示ページへ戻る
                 back_button = self.wait_driver.until(EC.element_to_be_clickable((By.CLASS_NAME, 'p-frame-backer')))
                 back_button.click()
-                time.sleep(0.5)
+                time.sleep(2)
                 # 次のリストを表示させるボタンをクリック
                 next_list_button = self.wait_driver.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'li.page-item > button > span.p-pagination-next-icon')))
                 next_list_button.click()
                 time.sleep(2)
+
             else:
                 break
+
         self.driver.quit()
+        
         # 全ての多次元リストを連結
         to_csv_list = []
         for loop in range( len(all_list) ):
             to_csv_list.extend( all_list[loop] )    
+        
         return to_csv_list
-
-
-
+    
 
 def remove_non_number(text):
     divided_number = re.findall(r'\d+', text)  # 文字列から数字にマッチするものをリストとして取得
@@ -333,15 +346,21 @@ def list_to_excel(to_excel_list: list , output_excel_path: str = "output.xlsx"):
     log_txt.add_log_txt("Excelのワークブック起動完了 : workbook = openpyxl.load_workbook()")
     sheet = workbook.active
     log_txt.add_log_txt("ワークブックのアクティブ化完了 : sheet = workbook.active")
-    row_num = len(to_excel_list)
-    log_txt.add_log_txt(f"row_num : {row_num}")
-    col_num = len(to_excel_list[0])
-    log_txt.add_log_txt(f"col_num : {col_num}")
+    # 多次元リストのサイズを取得(行ごとで列数に違いがあることを考慮)
+    row_num , col_num = len(to_excel_list) , 0
+    for row in range(row_num):
+        predict_col = len(to_excel_list[row])
+        if predict_col > col_num:
+            col_num = predict_col
+    log_txt.add_log_txt(f"row_num , col_num : {row_num} , {col_num}")
     for row in range(row_num):
         for col in range(col_num):
-            sheet.cell(row=row+1, column=col+1).value = to_excel_list[row][col]
-            log_txt.add_log_txt(f"pressed_cell_value : {to_excel_list[row][col]}")
-            log_txt.add_log_txt(f"row , col : {row} , {col} \n")
+            try:
+                log_txt.add_log_txt(f"pressed_cell_value : {to_excel_list[row][col]}")
+                log_txt.add_log_txt(f"row , col : {row} , {col} \n \n")
+                sheet.cell(row=row+1, column=col+1).value = to_excel_list[row][col]
+            except IndexError:
+                pass
     log_txt.add_log_txt("セルの編集可能が証明 : sheet.cell(row=row+1, column=col+1).value = to_excel_list[row][col]")
     workbook.save(output_excel_path)
     
