@@ -320,15 +320,12 @@ def excel_to_list(input_excel_path: str = "input.xlsx"):
 
 def list_to_excel(to_excel_list: list , output_excel_path: str = "output.xlsx"):
     workbook = openpyxl.Workbook()
-    log_txt.add_log_txt("Excelのワークブック起動完了 : workbook = openpyxl.load_workbook()")
     sheet = workbook.active
-    log_txt.add_log_txt("ワークブックのアクティブ化完了 : sheet = workbook.active")
     row_num = len(to_excel_list)
     col_num = len(to_excel_list[0])
     for row in range(row_num):
         for col in range(col_num):
             sheet.cell(row=row+1, column=col+1).value = to_excel_list[row][col]
-    log_txt.add_log_txt("セルの編集可能が証明 : sheet.cell(row=row+1, column=col+1).value = to_excel_list[row][col]")
     workbook.save(output_excel_path)
     
 
@@ -339,6 +336,7 @@ def get_search_option(input_csv_path):
     search_requirement = int( search_option_list[1][1] )
     return search_method_value , search_requirement
 
+    
 class logText:
     def __init__(self , log_txt_path) -> None:
         self.log_txt_path = log_txt_path
@@ -350,17 +348,24 @@ class logText:
         """ logを付け加える関数 """
         with open(self.log_txt_path, 'a') as file:
             file.write("\n" + add_log_text)
-log_txt = logText(log_txt_path)
+
 
 class RequestData(BaseModel):
-    to_excel_list: list
-    search_method: str
-    search_requirement: str
+    data_list: list
+    data_str: str
+    data_int: int
 
 app = FastAPI()
 
 @app.post("/")
-def fast_api_scraping():
+def cloud_fast_api_1(data: RequestData):
+    # 呼び出し元からデータを取得
+    data_list = data.data_list
+    data_str = data.data_str
+    data_int = data.data_int
+
+    log_txt = logText(log_txt_path)
+
     # ページにアクセス
     searched_url = "https://system.reins.jp/"
     driver = browser_setup()
@@ -381,6 +386,10 @@ def fast_api_scraping():
         # スクレイピング結果のリストを取得
         to_excel_list = reins_sraper.scraping_solding_list(search_method_value , index_of_search_requirement)
         log_txt.add_log_txt("スクレイピング結果のリストを取得 : 完了")
+        # スクレイピング結果のリストをExcelファイルに保存
+        list_to_excel(to_excel_list , output_reins_excel_path)
+        ##### 最終的にはExcelの定型フォームに貼り付け
+        log_txt.add_log_txt("スクレイピング結果をExcelファイルに変更 : 完了")
 
         # 検索方法と検索条件を文字列で取得
         if search_method_value == "search_solding":
@@ -390,49 +399,6 @@ def fast_api_scraping():
             search_method = "賃貸検索"
             search_requirement = rental_search_method_list[index_of_search_requirement]
         log_txt.add_log_txt("検索方法と検索条件を文字列で取得 : 完了")
-
-        # メールの送信文
-        message_subject = "REINSスクレイピング定期実行"
-        message_body = f"""
-            スクレイピングまでは完了
-        """
-        file_path = output_reins_excel_path
-    except:
-        # メールの送信文
-        message_subject = "REINSスクレイピング定期実行"
-        message_body = f"""
-            スクレイピングができませんでした。エラーが発生しました。
-        """
-        file_path = log_txt_path    
-    # メールアドレスのリストをExcelから取得
-    mail_list , cc_mail_list , from_email , from_email_smtp_password = mail_list_from_excel(mail_excel_path)
-    # 全てのメールにスクレイピング結果のExcelを送信
-    for loop , to_email in enumerate(mail_list):
-        cc_mail_row_list = cc_mail_list[loop]
-        send_py_gmail(
-            message_subject , message_body , from_email_smtp_password ,
-            from_email , to_email , cc_mail_row_list = cc_mail_row_list ,
-            file_path = file_path ,
-        )
-    return {
-        "to_excel_list": to_excel_list ,
-        "search_method" : search_method ,
-        "search_requirement" : search_requirement ,
-    }
-
-
-
-@app.post("/excel")
-def fast_api_excel(api_data: RequestData):
-    log_txt.add_log_txt("2つ目のAPI起動完了")
-    to_excel_list = api_data.to_excel_list
-    search_method = api_data.search_method
-    search_requirement = api_data.search_requirement
-    try:
-        # スクレイピング結果のリストをExcelファイルに保存
-        list_to_excel(to_excel_list , output_reins_excel_path)
-        ##### 最終的にはExcelの定型フォームに貼り付け
-        log_txt.add_log_txt("スクレイピング結果をExcelファイルに変更 : 完了")
         
         # メールの送信文
         message_subject = "REINSスクレイピング定期実行"
@@ -470,4 +436,4 @@ def fast_api_excel(api_data: RequestData):
         )
 
 
-    return {"message_body": message_body}
+    return {"api_output_text": message_body}
