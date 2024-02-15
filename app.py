@@ -151,7 +151,7 @@ class Reins_Scraper:
         time.sleep(0.5)
         login_button = self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), 'ログイン')]")))
         login_button.click()
-        time.sleep(1)
+        time.sleep(3)
 
     def get_solding_or_rental_option(self):
         # ボタン「売買 物件検索」をクリック
@@ -369,7 +369,8 @@ class RequestData(BaseModel):
     search_method: str
     search_requirement: str
 
-app = FastAPI()
+# app = FastAPI()
+app = FastAPI(default_response_limit=1024 * 1024 * 10)  # 10MBに増量
 
 @app.post("/")
 def fast_api_scraping():
