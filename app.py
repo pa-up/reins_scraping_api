@@ -396,7 +396,7 @@ def fast_api_scraping():
         message_body = f"""
             スクレイピングまでは完了
         """
-        file_path = output_reins_excel_path
+        file_path = log_txt_path
     except:
         # メールの送信文
         message_subject = "REINSスクレイピング定期実行"
