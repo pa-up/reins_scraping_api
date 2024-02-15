@@ -306,16 +306,23 @@ def csv_to_list(csv_path: str = "output.csv"):
 
 def excel_to_list(input_excel_path: str = "input.xlsx"):
     workbook = openpyxl.load_workbook(input_excel_path)
+    log_txt.add_log_txt("Excelのワークブック起動完了 : workbook = openpyxl.load_workbook()")
     sheet = workbook.active
+    log_txt.add_log_txt("ワークブックのアクティブ化完了 : sheet = workbook.active")
     row_num = sheet.max_row
+    log_txt.add_log_txt(f"row_num : {row_num}")
     col_num = sheet.max_column
+    log_txt.add_log_txt(f"col_num : {col_num}")
     data_list = []
     for row in range(1, row_num+1):
         row_data = []
         for col in range(1, col_num+1):
             cell_value = sheet.cell(row=row, column=col).value
+            log_txt.add_log_txt(f"cell_value : {cell_value}")
+            log_txt.add_log_txt(f"row , col : {row} , {col} \n")
             row_data.append(cell_value)
         data_list.append(row_data)
+    log_txt.add_log_txt("セルの編集可能が証明 : cell_value = sheet.cell(row=row, column=col).value")
     return data_list
 
 def list_to_excel(to_excel_list: list , output_excel_path: str = "output.xlsx"):
@@ -324,10 +331,14 @@ def list_to_excel(to_excel_list: list , output_excel_path: str = "output.xlsx"):
     sheet = workbook.active
     log_txt.add_log_txt("ワークブックのアクティブ化完了 : sheet = workbook.active")
     row_num = len(to_excel_list)
+    log_txt.add_log_txt(f"row_num : {row_num}")
     col_num = len(to_excel_list[0])
+    log_txt.add_log_txt(f"col_num : {col_num}")
     for row in range(row_num):
         for col in range(col_num):
             sheet.cell(row=row+1, column=col+1).value = to_excel_list[row][col]
+            log_txt.add_log_txt(f"pressed_cell_value : {to_excel_list[row][col]}")
+            log_txt.add_log_txt(f"row , col : {row} , {col} \n")
     log_txt.add_log_txt("セルの編集可能が証明 : sheet.cell(row=row+1, column=col+1).value = to_excel_list[row][col]")
     workbook.save(output_excel_path)
     
@@ -453,7 +464,7 @@ def fast_api_excel(api_data: RequestData):
         # メールの送信文
         message_subject = "REINSスクレイピング定期実行"
         message_body = f"""
-            スクレイピングができませんでした。エラーが発生しました。
+            Excelファイル化ができませんでした。エラーが発生しました。
         """
         file_path = log_txt_path
     
