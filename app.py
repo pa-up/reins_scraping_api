@@ -326,21 +326,26 @@ def excel_to_list(input_excel_path: str = "input.xlsx"):
     return data_list
 
 def list_to_excel(to_excel_list: list , output_excel_path: str = "output.xlsx"):
-    workbook = openpyxl.Workbook()
-    log_txt.add_log_txt("Excelのワークブック起動完了 : workbook = openpyxl.load_workbook()")
-    sheet = workbook.active
-    log_txt.add_log_txt("ワークブックのアクティブ化完了 : sheet = workbook.active")
-    row_num = len(to_excel_list)
-    log_txt.add_log_txt(f"row_num : {row_num}")
-    col_num = len(to_excel_list[0])
-    log_txt.add_log_txt(f"col_num : {col_num}")
-    for row in range(row_num):
-        for col in range(col_num):
-            sheet.cell(row=row+1, column=col+1).value = to_excel_list[row][col]
-            log_txt.add_log_txt(f"pressed_cell_value : {to_excel_list[row][col]}")
-            log_txt.add_log_txt(f"row , col : {row} , {col} \n")
-    log_txt.add_log_txt("セルの編集可能が証明 : sheet.cell(row=row+1, column=col+1).value = to_excel_list[row][col]")
-    workbook.save(output_excel_path)
+    error_text = ""
+    try:
+        workbook = openpyxl.Workbook()
+        log_txt.add_log_txt("Excelのワークブック起動完了 : workbook = openpyxl.load_workbook()")
+        sheet = workbook.active
+        log_txt.add_log_txt("ワークブックのアクティブ化完了 : sheet = workbook.active")
+        row_num = len(to_excel_list)
+        log_txt.add_log_txt(f"row_num : {row_num}")
+        col_num = len(to_excel_list[0])
+        log_txt.add_log_txt(f"col_num : {col_num}")
+        for row in range(row_num):
+            for col in range(col_num):
+                sheet.cell(row=row+1, column=col+1).value = to_excel_list[row][col]
+                log_txt.add_log_txt(f"pressed_cell_value : {to_excel_list[row][col]}")
+                log_txt.add_log_txt(f"row , col : {row} , {col} \n")
+        log_txt.add_log_txt("セルの編集可能が証明 : sheet.cell(row=row+1, column=col+1).value = to_excel_list[row][col]")
+        workbook.save(output_excel_path)
+    except Exception as error_data:
+        error_text = str(error_data)
+    return error_text
     
 
 def get_search_option(input_csv_path):
@@ -441,7 +446,7 @@ def fast_api_excel(api_data: RequestData):
     search_requirement = api_data.search_requirement
     try:
         # スクレイピング結果のリストをExcelファイルに保存
-        list_to_excel(to_excel_list , output_reins_excel_path)
+        error_text = list_to_excel(to_excel_list , output_reins_excel_path)
         ##### 最終的にはExcelの定型フォームに貼り付け
         log_txt.add_log_txt("スクレイピング結果をExcelファイルに変更 : 完了")
         
@@ -465,6 +470,8 @@ def fast_api_excel(api_data: RequestData):
         message_subject = "REINSスクレイピング定期実行"
         message_body = f"""
             Excelファイル化ができませんでした。エラーが発生しました。
+            エラーメッセージ：
+            {error_text}
         """
         file_path = log_txt_path
     
