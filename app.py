@@ -463,30 +463,28 @@ app = FastAPI(default_response_limit=1024 * 1024 * 10)  # 10MBに増量
 
 @app.post("/")
 def fast_api_scraping(api_data_scraping: RequestDataScraping):
-    search_method_value = api_data_scraping.search_method_value
-    index_of_search_requirement = api_data_scraping.index_of_search_requirement
-    mail_list = api_data_scraping.mail_list
-    cc_mail_list = api_data_scraping.cc_mail_list
-    from_email = api_data_scraping.from_email
-    from_email_smtp_password = api_data_scraping.from_email_smtp_password
-
-    # ページにアクセス
-    searched_url = "https://system.reins.jp/"
-    driver = browser_setup()
-    reins_sraper = Reins_Scraper(driver)
-    driver.get(searched_url)
-    log_txt.add_log_txt("reinsサイトにアクセス完了")
-
     try:
+        search_method_value = api_data_scraping.search_method_value
+        index_of_search_requirement = api_data_scraping.index_of_search_requirement
+        mail_list = api_data_scraping.mail_list
+        cc_mail_list = api_data_scraping.cc_mail_list
+        from_email = api_data_scraping.from_email
+        from_email_smtp_password = api_data_scraping.from_email_smtp_password
+        log_txt.add_log_txt("RequestDataScraping 取得完了")
+
+        # ページにアクセス
+        searched_url = "https://system.reins.jp/"
+        driver = browser_setup()
+        reins_sraper = Reins_Scraper(driver)
+        driver.get(searched_url)
+        log_txt.add_log_txt("reinsサイトにアクセス完了")
+
         # ログイン突破
         reins_sraper.login_reins(user_id , password)
         log_txt.add_log_txt("ログイン成功")
         # REINS上で存在する検索方法と検索条件を全て取得（01〜50番号まであることを前提）
         solding_search_method_list , rental_search_method_list = reins_sraper.get_solding_or_rental_option()
         log_txt.add_log_txt(f"solding_search_method_list , rental_search_method_list : \n{solding_search_method_list} \n{rental_search_method_list}")
-        # csvファイルから検索方法と検索条件を選択（将来的に別のWEBアプリでも編集可能）
-        search_method_value , index_of_search_requirement = get_search_option(search_method_csv_path)
-        log_txt.add_log_txt(f"(search_method_value , index_of_search_requirement) : \n{search_method_value} \n{index_of_search_requirement}")
         # スクレイピング結果のリストを取得
         to_excel_list = reins_sraper.scraping_solding_list(search_method_value , index_of_search_requirement)
         log_txt.add_log_txt("スクレイピング結果のリストを取得 : 完了")
