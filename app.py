@@ -520,9 +520,8 @@ def fast_api_scraping(api_data_scraping: RequestDataScraping):
         message_body = f"""
             スクレイピングができませんでした。エラーが発生しました。
         """
-        file_path = log_txt_path    
-    # メールアドレスのリストをExcelから取得
-    mail_list , cc_mail_list , from_email , from_email_smtp_password = mail_list_from_excel(mail_excel_path)
+        file_path = log_txt_path
+
     # 全てのメールにスクレイピング結果のExcelを送信
     for loop , to_email in enumerate(mail_list):
         cc_mail_row_list = cc_mail_list[loop]
