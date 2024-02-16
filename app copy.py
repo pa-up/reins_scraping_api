@@ -462,25 +462,26 @@ app = FastAPI(default_response_limit=1024 * 1024 * 10)  # 10MBに増量
 
 
 @app.post("/")
-def fast_api_scraping():
-    # S3からメール情報や検索条件を取得し、静的フォルダに格納
-    manipulate_s3 = ManipulateS3(
-        region = "ap-northeast-1" ,
-        accesskey = s3_accesskey ,
-        secretkey = s3_secretkey ,
-        bucket_name = "s3-media-py"
-    )
-    manipulate_s3.s3_file_download(local_upload_path = mail_excel_path)
-    manipulate_s3.s3_file_download(local_upload_path = search_method_csv_path)
-    time.sleep(2)
+def fast_api_scraping(api_data_scraping: RequestDataScraping):
+    mail_list = api_data_scraping.mail_list
+    cc_mail_list = api_data_scraping.cc_mail_list
+    from_email = api_data_scraping.from_email
+    from_email_smtp_password = api_data_scraping.from_email_smtp_password
+    # 全てのメールにスクレイピング結果のExcelを送信
+    for loop , to_email in enumerate(mail_list):
+        cc_mail_row_list = cc_mail_list[loop]
+        send_py_gmail(
+            message_subject , message_body , from_email_smtp_password ,
+            from_email , to_email , cc_mail_row_list = cc_mail_row_list ,
+            file_path = file_path ,
+        )
 
-    # csvファイルから検索方法と検索条件を選択（将来的に別のWEBアプリでも編集可能）
-    search_method_value , index_of_search_requirement = get_search_option(search_method_csv_path)
-    # メールアドレスのリストをExcelから取得
-    mail_list , cc_mail_list , from_email , from_email_smtp_password = mail_list_from_excel(mail_excel_path)
-
+        
     try:
-        log_txt.add_log_txt("S3 取得完了")
+        search_method_value = api_data_scraping.search_method_value
+        index_of_search_requirement = api_data_scraping.index_of_search_requirement
+        log_txt.add_log_txt("RequestDataScraping 取得完了")
+
         # ページにアクセス
         searched_url = "https://system.reins.jp/"
         driver = browser_setup()
