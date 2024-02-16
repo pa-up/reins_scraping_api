@@ -5,6 +5,7 @@ import re
 import time
 import os
 import csv
+import boto3
 import openpyxl
 
 from bs4 import BeautifulSoup
@@ -23,15 +24,21 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
 
 
-# パスの定義
 static_path = "static"
+# 入力パス
 mail_excel_path = static_path + "/input_excel/email_pw.xlsx"
 search_method_csv_path = static_path + "/csv/search_method.csv"
+# 出力パス
 output_reins_excel_path = static_path + "/output_excel/output_reins.xlsx"
 log_txt_path = static_path + "/log/log.txt"
 
 # 環境変数の取得
 user_id , password = os.environ.get('SECRET_USER_ID') , os.environ.get('SECRET_PASSWORD')
+s3_accesskey , s3_secretkey = os.environ.get('S3_ACCESSKEY') , os.environ.get('S3_SECRETKEY')
+
+# s3の定義
+s3_region = "ap-northeast-1"   # 東京(アジアパシフィック)：ap-northeast-1
+s3_bucket_name = "s3-media-py"
 
 
 def send_py_gmail(
@@ -372,6 +379,53 @@ def get_search_option(input_csv_path):
     search_requirement = int( search_option_list[1][1] )
     return search_method_value , search_requirement
 
+
+
+
+
+
+class ManipulateS3:
+    def __init__(self , accesskey , secretkey , bucket_name , region = "ap-northeast-1"):
+        self.region = region  # 東京(アジアパシフィック)：ap-northeast-1
+        self.accesskey = accesskey
+        self.secretkey = secretkey
+        self.bucket_name = bucket_name
+        self.s3 = boto3.client('s3', aws_access_key_id=self.accesskey, aws_secret_access_key=self.secretkey, region_name=self.region)
+    
+    def get_file_name_from_file_path(self , file_path):
+        """ パスからファイル名のみを抽出する関数
+            s3にフォルダを作成し、ファイルをアップロードする場合は、この関数を使わずに、file_pathにフォルダ名を含める
+        """
+        file_name_from_path = file_path[file_path.rfind('/') + 1 : ]  # ファイルパスからファイル名のみを抽出
+        return file_name_from_path
+    
+    def s3_file_upload(self , file_path):
+        """ s3の特定のバケットにファイルをアップロードし、そのファイルのURLも取得する関数
+            s3上のファイルが同一のファイル名であれば、s3内で上書き保存される
+        """
+        key_name = self.get_file_name_from_file_path(file_path)
+        # s3へファイルをアップロード
+        self.s3.upload_file(file_path, self.bucket_name, key_name)
+        # S3へアップロードしたファイルへのURLを取得する
+        s3_url = self.s3.generate_presigned_url(
+            ClientMethod='get_object',
+            Params={'Bucket': self.bucket_name, 'Key': key_name},
+            ExpiresIn=3600,
+            HttpMethod='GET'
+        )
+        return s3_url
+    
+    def s3_file_download(self , local_upload_path):
+        """ s3の特定のバケットからファイル名で検索し、一致するファイルをダウンロードする関数
+            local_file_pathのファイル名はs3で取得予定のファイル名を同一にする
+        """
+        key_name = self.get_file_name_from_file_path(local_upload_path)
+        print(f"key_name : {key_name}")
+        self.s3.download_file(self.bucket_name, key_name, local_upload_path)
+
+
+
+
 class logText:
     def __init__(self , log_txt_path) -> None:
         self.log_txt_path = log_txt_path
@@ -385,16 +439,37 @@ class logText:
             file.write("\n" + add_log_text)
 log_txt = logText(log_txt_path)
 
-class RequestData(BaseModel):
+
+class RequestDataScraping(BaseModel):
+    search_method_value: list
+    index_of_search_requirement: int
+    mail_list: list
+    cc_mail_list: list
+    from_email: str
+    from_email_smtp_password: str
+
+class RequestDataExcel(BaseModel):
     to_excel_list: list
     search_method: str
     search_requirement: str
+    mail_list: list
+    cc_mail_list: list
+    from_email: str
+    from_email_smtp_password: str
 
 # app = FastAPI()
 app = FastAPI(default_response_limit=1024 * 1024 * 10)  # 10MBに増量
 
+
 @app.post("/")
-def fast_api_scraping():
+def fast_api_scraping(api_data_scraping: RequestDataScraping):
+    search_method_value = api_data_scraping.search_method_value
+    index_of_search_requirement = api_data_scraping.index_of_search_requirement
+    mail_list = api_data_scraping.mail_list
+    cc_mail_list = api_data_scraping.cc_mail_list
+    from_email = api_data_scraping.from_email
+    from_email_smtp_password = api_data_scraping.from_email_smtp_password
+
     # ページにアクセス
     searched_url = "https://system.reins.jp/"
     driver = browser_setup()
@@ -462,16 +537,58 @@ def fast_api_scraping():
         "to_excel_list": to_excel_list ,
         "search_method" : search_method ,
         "search_requirement" : search_requirement ,
+        "mail_list" : mail_list ,
+        "cc_mail_list" : cc_mail_list ,
+        "from_email" : from_email ,
+        "from_email_smtp_password" : from_email_smtp_password ,
     }
 
 
 
+
+@app.post("/s3")
+def fast_api_s3():
+    # S3からメール情報や検索条件を取得し、静的フォルダに格納
+    manipulate_s3 = ManipulateS3(
+        region = "ap-northeast-1" ,
+        accesskey = s3_accesskey ,
+        secretkey = s3_secretkey ,
+        bucket_name = "s3-media-py"
+    )
+    manipulate_s3.s3_file_download(local_upload_path = mail_excel_path)
+    manipulate_s3.s3_file_download(local_upload_path = search_method_csv_path)
+    time.sleep(2)
+
+    # csvファイルから検索方法と検索条件を選択（将来的に別のWEBアプリでも編集可能）
+    search_method_value , index_of_search_requirement = get_search_option(search_method_csv_path)
+
+    # メールアドレスのリストをExcelから取得
+    mail_list , cc_mail_list , from_email , from_email_smtp_password = mail_list_from_excel(mail_excel_path)
+
+    return {
+        "search_method_value": search_method_value ,
+        "index_of_search_requirement" : index_of_search_requirement ,
+        "mail_list" : mail_list ,
+        "cc_mail_list" : cc_mail_list ,
+        "from_email" : from_email ,
+        "from_email_smtp_password" : from_email_smtp_password ,
+    }
+
+
+
+
 @app.post("/excel")
-def fast_api_excel(api_data: RequestData):
+def fast_api_excel(api_data_excel: RequestDataExcel):
     log_txt.add_log_txt("2つ目のAPI起動完了")
-    to_excel_list = api_data.to_excel_list
-    search_method = api_data.search_method
-    search_requirement = api_data.search_requirement
+    to_excel_list = api_data_excel.to_excel_list
+    search_method = api_data_excel.search_method
+    search_requirement = api_data_excel.search_requirement
+
+    mail_list = api_data_excel.mail_list
+    cc_mail_list = api_data_excel.cc_mail_list
+    from_email = api_data_excel.from_email
+    from_email_smtp_password = api_data_excel.from_email_smtp_password
+
     try:
         # スクレイピング結果のリストをExcelファイルに保存
         list_to_excel(to_excel_list , output_reins_excel_path)
@@ -515,9 +632,6 @@ def fast_api_excel(api_data: RequestData):
             ========================================
         """
         file_path = log_txt_path
-    
-    # メールアドレスのリストをExcelから取得
-    mail_list , cc_mail_list , from_email , from_email_smtp_password = mail_list_from_excel(mail_excel_path)
 
     # 全てのメールにスクレイピング結果のExcelを送信
     for loop , to_email in enumerate(mail_list):
@@ -527,6 +641,6 @@ def fast_api_excel(api_data: RequestData):
             from_email , to_email , cc_mail_row_list = cc_mail_row_list ,
             file_path = file_path ,
         )
-
-
     return {"message_body": message_body}
+
+
