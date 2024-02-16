@@ -463,13 +463,13 @@ app = FastAPI(default_response_limit=1024 * 1024 * 10)  # 10MBに増量
 
 @app.post("/")
 def fast_api_scraping(api_data_scraping: RequestDataScraping):
+    mail_list = api_data_scraping.mail_list
+    cc_mail_list = api_data_scraping.cc_mail_list
+    from_email = api_data_scraping.from_email
+    from_email_smtp_password = api_data_scraping.from_email_smtp_password
     try:
         search_method_value = api_data_scraping.search_method_value
         index_of_search_requirement = api_data_scraping.index_of_search_requirement
-        mail_list = api_data_scraping.mail_list
-        cc_mail_list = api_data_scraping.cc_mail_list
-        from_email = api_data_scraping.from_email
-        from_email_smtp_password = api_data_scraping.from_email_smtp_password
         log_txt.add_log_txt("RequestDataScraping 取得完了")
 
         # ページにアクセス
