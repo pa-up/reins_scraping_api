@@ -35,10 +35,10 @@ log_txt_path = static_path + "/log/log.txt"
 # 環境変数の取得
 user_id , password = os.environ.get('SECRET_USER_ID') , os.environ.get('SECRET_PASSWORD')
 s3_accesskey , s3_secretkey = os.environ.get('S3_ACCESSKEY') , os.environ.get('S3_SECRETKEY')
+s3_bucket_name = os.environ.get('S3_BUCKET_NAME')
 
 # s3の定義
 s3_region = "ap-northeast-1"   # 東京(アジアパシフィック)：ap-northeast-1
-s3_bucket_name = "s3-media-py"
 
 
 def send_py_gmail(
