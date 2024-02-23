@@ -37,6 +37,7 @@ user_id , password = os.environ.get('SECRET_USER_ID') , os.environ.get('SECRET_P
 s3_accesskey , s3_secretkey = os.environ.get('S3_ACCESSKEY') , os.environ.get('S3_SECRETKEY')
 s3_bucket_name = os.environ.get('S3_BUCKET_NAME')
 
+
 # s3の定義
 s3_region = "ap-northeast-1"   # 東京(アジアパシフィック)：ap-northeast-1
 
@@ -468,7 +469,7 @@ def fast_api_scraping():
         region = "ap-northeast-1" ,
         accesskey = s3_accesskey ,
         secretkey = s3_secretkey ,
-        bucket_name = "s3-media-py"
+        bucket_name = s3_bucket_name ,
     )
     manipulate_s3.s3_file_download(local_upload_path = mail_excel_path)
     manipulate_s3.s3_file_download(local_upload_path = search_method_csv_path)
