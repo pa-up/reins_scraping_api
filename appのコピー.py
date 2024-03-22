@@ -151,6 +151,17 @@ def fast_api_scraping():
         reins_sraper.driver.quit()
         log_txt.add_log_txt("スクレイピング結果のリストを取得 : 完了")
 
+        return {
+            "many_excel_list": many_excel_list ,
+            "search_method_list" : search_method_list ,
+            "search_requirement_list" : search_requirement_list ,
+            "mail_list" : mail_list ,
+            "cc_mail_list" : cc_mail_list ,
+            "from_email" : from_email ,
+            "from_email_smtp_password" : from_email_smtp_password ,
+        }
+        
+
     except:
         # メールの送信文
         message_subject = "REINSスクレイピング定期実行"
@@ -169,14 +180,25 @@ def fast_api_scraping():
             )
 
 
-    """ 以下は結果のExcelファイル化 """
+@app.post("/excel")
+def fast_api_excel(api_data_excel: RequestDataExcel):
+    log_txt.add_log_txt("2つ目のAPI起動完了")
+    print("2つ目のAPI起動完了")
     message_subject = "REINSスクレイピング定期実行"
     message_body = ""
 
     print(f"全てのパラメータを2つ目APIでの取得 が完了")
 
     try:
+        many_excel_list = api_data_excel.many_excel_list
+        search_method_list = api_data_excel.search_method_list
+        search_requirement_list = api_data_excel.search_requirement_list
 
+        mail_list = api_data_excel.mail_list
+        cc_mail_list = api_data_excel.cc_mail_list
+        from_email = api_data_excel.from_email
+        from_email_smtp_password = api_data_excel.from_email_smtp_password
+        
         # スクレイピング結果のリストをExcelファイルに保存
         # ec.many_list_to_excel(
         #     many_excel_list , input_reins_excel_path , output_reins_excel_path , search_requirement_list
