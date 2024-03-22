@@ -240,30 +240,11 @@ def fast_api_excel(api_data_excel: RequestDataExcel):
 
         file_path = output_reins_excel_path
 
-    except Exception as error_data:
-        error_text = str(error_data)
+    except:
         print(f"エラー発生")
-        print(f"error_text : {error_text}")
+        log_txt.add_log_txt("エラー発生")
         # メールの送信文
         message_subject = "REINSスクレイピング定期実行"
-        message_body = f"""
-            Excelファイル化ができませんでした。エラーが発生しました。
-            ========================================
-            検索方法 : 「{search_method}」
-            検索条件：「{search_requirement}」
-            ========================================
-            エラーメッセージ :
-            ----------------------------------------
-            {error_text}
-            ========================================
-
-            ========================================
-            REINSのExcelリスト :
-            ----------------------------------------
-            {many_excel_list}
-            ========================================
-        """
-
         message_body = f"Excelファイル化ができませんでした。エラーが発生しました。 \n"
         message_body = message_body + "検索条件 \n"
         message_body = message_body + " ①売買検索 : \n"
