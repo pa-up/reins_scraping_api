@@ -63,6 +63,7 @@ class Reins_Scraper:
     
     def login_reins(self, login_url , user_id: str , password: str ,):
         self.driver.get(login_url)
+        time.sleep(2)
 
         # ログインボタンをクリック
         login_button = self.wait_driver.until(EC.element_to_be_clickable((By.ID, "login-button")))
@@ -82,6 +83,7 @@ class Reins_Scraper:
         login_button = self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), 'ログイン')]")))
         login_button.click()
         time.sleep(3)
+
 
     def get_solding_or_rental_option(self):
         # ボタン「売買 物件検索」をクリック
@@ -119,14 +121,16 @@ class Reins_Scraper:
         self.driver.back()
         time.sleep(2)
         return solding_search_method_list , rental_search_method_list
+    
         
-    def scraping_solding_list(self , search_method_value: str , index_of_search_requirement: int):
+    def scraping_solding_list(self , searched_url , search_method_value: str , index_of_search_requirement: int):
+        self.driver.get(searched_url)
         # 選択された検索方法をクリック
         if search_method_value == "search_solding":
             building_search_button = self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), '売買') and contains(text(), '物件検索')]")))
             building_search_button.click()
             time.sleep(1)
-        else:
+        if search_method_value == "search_rental":
             building_search_button = self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), '賃貸') and contains(text(), '物件検索')]")))
             building_search_button.click()
             time.sleep(1)
@@ -145,9 +149,7 @@ class Reins_Scraper:
         # 検索条件が存在するか判定
         exist_search_requirement_sentence = self.wait_driver.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[class*="modal"]'))).text
         if "エラー" in exist_search_requirement_sentence:
-            to_csv_list = False
-            self.driver.quit()
-            return to_csv_list
+            return [[f"その検索条件は未保存です : "]]
         
         ok_button = self.wait_driver.until(EC.presence_of_element_located((By.XPATH, "//button[contains(text(), 'OK')]")))
         ok_button.click()
@@ -202,7 +204,7 @@ class Reins_Scraper:
             else:
                 break
 
-        self.driver.quit()
+        # self.driver.quit()
         
         # 全ての多次元リストを連結
         to_csv_list = []

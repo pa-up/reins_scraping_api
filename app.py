@@ -151,6 +151,17 @@ def fast_api_scraping():
         reins_sraper.driver.quit()
         log_txt.add_log_txt("スクレイピング結果のリストを取得 : 完了")
 
+        return {
+            "many_excel_list": many_excel_list ,
+            "search_method_list" : search_method_list ,
+            "search_requirement_list" : search_requirement_list ,
+            "mail_list" : mail_list ,
+            "cc_mail_list" : cc_mail_list ,
+            "from_email" : from_email ,
+            "from_email_smtp_password" : from_email_smtp_password ,
+        }
+        
+
     except:
         # メールの送信文
         message_subject = "REINSスクレイピング定期実行"
@@ -167,16 +178,6 @@ def fast_api_scraping():
                 from_email , to_email , cc_mail_row_list = cc_mail_row_list ,
                 file_path = file_path ,
             )
-
-    return {
-        "many_excel_list": many_excel_list ,
-        "search_method_list" : search_method_list ,
-        "search_requirement_list" : search_requirement_list ,
-        "mail_list" : mail_list ,
-        "cc_mail_list" : cc_mail_list ,
-        "from_email" : from_email ,
-        "from_email_smtp_password" : from_email_smtp_password ,
-    }
 
 
 @app.post("/excel")
