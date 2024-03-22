@@ -192,6 +192,8 @@ def fast_api_excel(api_data_excel: RequestDataExcel):
     cc_mail_list = api_data_excel.cc_mail_list
     from_email = api_data_excel.from_email
     from_email_smtp_password = api_data_excel.from_email_smtp_password
+    message_subject = "REINSスクレイピング定期実行"
+    message_body = ""
 
     print(f"全てのパラメータを2つ目APIでの取得 が完了")
 
@@ -204,9 +206,6 @@ def fast_api_excel(api_data_excel: RequestDataExcel):
 
         ##### 最終的にはExcelの定型フォームに貼り付け
         log_txt.add_log_txt("スクレイピング結果をExcelファイルに変更 : 完了")
-        
-        # メールの送信文
-        message_subject = "REINSスクレイピング定期実行"
 
         search_method_list
         search_solding_list = []
@@ -239,12 +238,19 @@ def fast_api_excel(api_data_excel: RequestDataExcel):
         message_body = message_body + "指定日時実行の検索条件を変更する際は、ツール「web_reins」で設定変更が可能です。 \n"
 
         file_path = output_reins_excel_path
+        # 全てのメールにスクレイピング結果のExcelを送信
+        for loop , to_email in enumerate(mail_list):
+            cc_mail_row_list = cc_mail_list[loop]
+            py_mail.send_py_gmail(
+                message_subject , message_body , from_email_smtp_password ,
+                from_email , to_email , cc_mail_row_list = cc_mail_row_list ,
+                file_path = file_path ,
+            )
 
     except:
         print(f"エラー発生")
         log_txt.add_log_txt("エラー発生")
         # メールの送信文
-        message_subject = "REINSスクレイピング定期実行"
         message_body = f"Excelファイル化ができませんでした。エラーが発生しました。 \n"
         message_body = message_body + "検索条件 \n"
         message_body = message_body + " ①売買検索 : \n"
@@ -262,14 +268,14 @@ def fast_api_excel(api_data_excel: RequestDataExcel):
         file_path = log_txt_path
         
 
-    # 全てのメールにスクレイピング結果のExcelを送信
-    for loop , to_email in enumerate(mail_list):
-        cc_mail_row_list = cc_mail_list[loop]
-        py_mail.send_py_gmail(
-            message_subject , message_body , from_email_smtp_password ,
-            from_email , to_email , cc_mail_row_list = cc_mail_row_list ,
-            file_path = file_path ,
-        )
+        # 全てのメールにスクレイピング結果のExcelを送信
+        for loop , to_email in enumerate(mail_list):
+            cc_mail_row_list = cc_mail_list[loop]
+            py_mail.send_py_gmail(
+                message_subject , message_body , from_email_smtp_password ,
+                from_email , to_email , cc_mail_row_list = cc_mail_row_list ,
+                file_path = file_path ,
+            )
     print(f"メールの送信が完了")
 
 
