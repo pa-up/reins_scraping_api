@@ -207,7 +207,6 @@ def fast_api_excel(api_data_excel: RequestDataExcel):
         ##### 最終的にはExcelの定型フォームに貼り付け
         log_txt.add_log_txt("スクレイピング結果をExcelファイルに変更 : 完了")
 
-        search_method_list
         search_solding_list = []
         search_rental_list = []
         for search_method in search_method_list:
@@ -252,17 +251,17 @@ def fast_api_excel(api_data_excel: RequestDataExcel):
         log_txt.add_log_txt("エラー発生")
         # メールの送信文
         message_body = f"Excelファイル化ができませんでした。エラーが発生しました。 \n"
-        message_body = message_body + "検索条件 \n"
-        message_body = message_body + " ①売買検索 : \n"
-        for search_method in search_method_list:
-            message_body = search_method + "\n"
-        message_body = message_body + "\n" + " ②賃貸検索 : \n"
-        for search_requirement in search_requirement_list:
-            message_body = search_requirement + "\n"
-        message_body = message_body + "\n"
-        message_body = message_body + "======================================== \n"
-        message_body = message_body + "エラーメッセージ : \n"
-        message_body = message_body + "======================================== \n\n"
+        # message_body = message_body + "検索条件 \n"
+        # message_body = message_body + " ①売買検索 : \n"
+        # for search_method in search_method_list:
+        #     message_body = search_method + "\n"
+        # message_body = message_body + "\n" + " ②賃貸検索 : \n"
+        # for search_requirement in search_requirement_list:
+        #     message_body = search_requirement + "\n"
+        # message_body = message_body + "\n"
+        # message_body = message_body + "======================================== \n"
+        # message_body = message_body + "エラーメッセージ : \n"
+        # message_body = message_body + "======================================== \n\n"
         # message_body = message_body + f"{error_text} \n\n"
 
         file_path = log_txt_path
