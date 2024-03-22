@@ -183,6 +183,7 @@ def fast_api_scraping():
 @app.post("/excel")
 def fast_api_excel(api_data_excel: RequestDataExcel):
     log_txt.add_log_txt("2つ目のAPI起動完了")
+    print("2つ目のAPI起動完了")
     many_excel_list = api_data_excel.many_excel_list
     search_method_list = api_data_excel.search_method_list
     search_requirement_list = api_data_excel.search_requirement_list
@@ -192,11 +193,14 @@ def fast_api_excel(api_data_excel: RequestDataExcel):
     from_email = api_data_excel.from_email
     from_email_smtp_password = api_data_excel.from_email_smtp_password
 
+    print(f"全てのパラメータを2つ目APIでの取得 が完了")
+
     try:
         # スクレイピング結果のリストをExcelファイルに保存
         ec.many_list_to_excel(
             many_excel_list , input_reins_excel_path , output_reins_excel_path , search_requirement_list
         )
+        print(f"スクレイピング結果のリストをExcelファイルに保存 が完了")
 
         ##### 最終的にはExcelの定型フォームに貼り付け
         log_txt.add_log_txt("スクレイピング結果をExcelファイルに変更 : 完了")
@@ -238,6 +242,8 @@ def fast_api_excel(api_data_excel: RequestDataExcel):
 
     except Exception as error_data:
         error_text = str(error_data)
+        print(f"エラー発生")
+        print(f"error_text : {error_text}")
         # メールの送信文
         message_subject = "REINSスクレイピング定期実行"
         message_body = f"""
@@ -283,6 +289,7 @@ def fast_api_excel(api_data_excel: RequestDataExcel):
             from_email , to_email , cc_mail_row_list = cc_mail_row_list ,
             file_path = file_path ,
         )
+    print(f"メールの送信が完了")
     return {"message_body": message_body}
 
 

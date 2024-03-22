@@ -121,6 +121,7 @@ def many_list_to_excel(
     # コピー元のシートを定義
     from_sheet_name = "input"
     from_sheet = workbook[from_sheet_name]
+    print(f"コピー元のシートを定義 が完了")
 
     for sheet_index, to_excel_list in enumerate(many_list):
         print(f"sheet_index : {sheet_index}")
@@ -141,6 +142,7 @@ def many_list_to_excel(
 
             
         """ レインズの取得結果を紐付け """
+        print(f"レインズの取得結果を紐付け を予定 , sheet_index : {sheet_index}")
         # 多次元リストのサイズを取得(行ごとで列数に違いがあることを考慮)
         row_num, col_num = len(to_excel_list), 0
         for row in range(row_num):
