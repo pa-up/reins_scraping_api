@@ -176,11 +176,10 @@ def fast_api_scraping():
     print(f"全てのパラメータを2つ目APIでの取得 が完了")
 
     try:
-
         # スクレイピング結果のリストをExcelファイルに保存
-        # ec.many_list_to_excel(
-        #     many_excel_list , input_reins_excel_path , output_reins_excel_path , search_requirement_list
-        # )
+        ec.many_list_to_excel(
+            many_excel_list , input_reins_excel_path , output_reins_excel_path , search_requirement_list
+        )
         print(f"スクレイピング結果のリストをExcelファイルに保存 が完了")
 
         ##### 最終的にはExcelの定型フォームに貼り付け
