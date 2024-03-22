@@ -44,8 +44,8 @@ def html_table_tag_to_csv_list(table_tag_str: str, header_exist: bool = True):
 
 
 class Reins_Scraper:
-    def __init__(self, driver: WebDriverWait):
-        self.driver = driver
+    def __init__(self, browse_visually = "no"):
+        self.driver = self.browser_setup(browse_visually)
         self.wait_driver = WebDriverWait(self.driver, 5)
 
     def browser_setup(self , browse_visually = "no"):
