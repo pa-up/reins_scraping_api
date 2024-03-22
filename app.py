@@ -199,9 +199,9 @@ def fast_api_excel(api_data_excel: RequestDataExcel):
 
     try:
         # スクレイピング結果のリストをExcelファイルに保存
-        ec.many_list_to_excel(
-            many_excel_list , input_reins_excel_path , output_reins_excel_path , search_requirement_list
-        )
+        # ec.many_list_to_excel(
+        #     many_excel_list , input_reins_excel_path , output_reins_excel_path , search_requirement_list
+        # )
         print(f"スクレイピング結果のリストをExcelファイルに保存 が完了")
 
         ##### 最終的にはExcelの定型フォームに貼り付け
