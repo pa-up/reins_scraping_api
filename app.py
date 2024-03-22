@@ -271,6 +271,5 @@ def fast_api_excel(api_data_excel: RequestDataExcel):
             file_path = file_path ,
         )
     print(f"メールの送信が完了")
-    return {"message_body": message_body}
 
 
